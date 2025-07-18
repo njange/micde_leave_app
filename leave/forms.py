@@ -1,8 +1,23 @@
 from django import forms
-from django.contrib.auth.forms import UserCreationForm
+from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 from django.core.exceptions import ValidationError
 from .models import User, LeaveApplication
 from datetime import date
+
+
+class CustomAuthenticationForm(AuthenticationForm):
+    """Custom login form with Bootstrap styling."""
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields['username'].widget.attrs.update({
+            'class': 'form-control',
+            'placeholder': 'Enter your username'
+        })
+        self.fields['password'].widget.attrs.update({
+            'class': 'form-control',
+            'placeholder': 'Enter your password'
+        })
 
 
 class CustomUserCreationForm(UserCreationForm):
@@ -18,6 +33,19 @@ class CustomUserCreationForm(UserCreationForm):
         self.fields['first_name'].required = True
         self.fields['last_name'].required = True
         self.fields['department'].required = True
+        
+        # Add CSS classes to all fields
+        for field_name, field in self.fields.items():
+            field.widget.attrs.update({'class': 'form-control'})
+            
+        # Add specific placeholders
+        self.fields['username'].widget.attrs.update({'placeholder': 'Enter username'})
+        self.fields['email'].widget.attrs.update({'placeholder': 'Enter email address'})
+        self.fields['first_name'].widget.attrs.update({'placeholder': 'Enter first name'})
+        self.fields['last_name'].widget.attrs.update({'placeholder': 'Enter last name'})
+        self.fields['department'].widget.attrs.update({'placeholder': 'Enter department'})
+        self.fields['password1'].widget.attrs.update({'placeholder': 'Enter password'})
+        self.fields['password2'].widget.attrs.update({'placeholder': 'Confirm password'})
 
 
 class BaseLeaveApplicationForm(forms.ModelForm):
