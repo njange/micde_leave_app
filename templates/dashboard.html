@@ -1,0 +1,174 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard - MICDE Leave System{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-md-12">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2><i class="fas fa-tachometer-alt me-2"></i>Dashboard</h2>
+            <a href="{% url 'apply_leave' %}" class="btn btn-primary">
+                <i class="fas fa-plus me-2"></i>Apply for Leave
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- User Info Card -->
+<div class="row mb-4">
+    <div class="col-md-4">
+        <div class="card bg-info text-white">
+            <div class="card-body">
+                <h5 class="card-title"><i class="fas fa-user me-2"></i>Your Profile</h5>
+                <p class="card-text">
+                    <strong>Name:</strong> {{ user.first_name }} {{ user.last_name }}<br>
+                    <strong>Role:</strong> {{ user.get_role_display }}<br>
+                    <strong>Department:</strong> {{ user.department }}
+                </p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card bg-success text-white">
+            <div class="card-body">
+                <h5 class="card-title"><i class="fas fa-calendar-check me-2"></i>Leave Days</h5>
+                <h3 class="card-text">{{ user.leave_days_remaining }}</h3>
+                <p class="card-text">Days Remaining</p>
+            </div>
+        </div>
+    </div>
+    <div class="col-md-4">
+        <div class="card bg-warning text-white">
+            <div class="card-body">
+                <h5 class="card-title"><i class="fas fa-file-alt me-2"></i>Applications</h5>
+                <h3 class="card-text">{{ user_applications|length }}</h3>
+                <p class="card-text">Total Submitted</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Your Applications -->
+<div class="row">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header">
+                <h5><i class="fas fa-list me-2"></i>Your Leave Applications</h5>
+            </div>
+            <div class="card-body">
+                {% if user_applications %}
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Start Date</th>
+                                    <th>End Date</th>
+                                    <th>Days</th>
+                                    <th>Reason</th>
+                                    <th>Status</th>
+                                    <th>Applied On</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for application in user_applications %}
+                                <tr>
+                                    <td>{{ application.start_date }}</td>
+                                    <td>{{ application.end_date }}</td>
+                                    <td>{{ application.days_requested }}</td>
+                                    <td>{{ application.reason|truncatewords:10 }}</td>
+                                    <td>
+                                        {% if application.status == 'pending' %}
+                                            <span class="badge bg-warning">Pending</span>
+                                        {% elif application.status == 'approved' %}
+                                            <span class="badge bg-success">Approved</span>
+                                        {% else %}
+                                            <span class="badge bg-danger">Rejected</span>
+                                        {% endif %}
+                                    </td>
+                                    <td>{{ application.applied_date|date:"M d, Y" }}</td>
+                                    <td>
+                                        {% if application.pdf_file %}
+                                            <a href="{% url 'view_pdf' application.id %}" class="btn btn-sm btn-outline-primary" target="_blank">
+                                                <i class="fas fa-file-pdf me-1"></i>View PDF
+                                            </a>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="text-center">
+                        <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                        <p class="text-muted">You haven't submitted any leave applications yet.</p>
+                        <a href="{% url 'apply_leave' %}" class="btn btn-primary">
+                            <i class="fas fa-plus me-2"></i>Apply for Leave
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- HOD Section -->
+{% if user.is_hod %}
+<div class="row mt-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-header bg-primary text-white">
+                <h5><i class="fas fa-users me-2"></i>Pending Applications to Review</h5>
+            </div>
+            <div class="card-body">
+                {% if pending_applications %}
+                    <div class="table-responsive">
+                        <table class="table table-striped">
+                            <thead>
+                                <tr>
+                                    <th>Employee</th>
+                                    <th>Start Date</th>
+                                    <th>End Date</th>
+                                    <th>Days</th>
+                                    <th>Reason</th>
+                                    <th>Applied On</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for application in pending_applications %}
+                                <tr>
+                                    <td>{{ application.user.first_name }} {{ application.user.last_name }}</td>
+                                    <td>{{ application.start_date }}</td>
+                                    <td>{{ application.end_date }}</td>
+                                    <td>{{ application.days_requested }}</td>
+                                    <td>{{ application.reason|truncatewords:10 }}</td>
+                                    <td>{{ application.applied_date|date:"M d, Y" }}</td>
+                                    <td>
+                                        <a href="{% url 'review_leave' application.id %}" class="btn btn-sm btn-primary">
+                                            <i class="fas fa-eye me-1"></i>Review
+                                        </a>
+                                        {% if application.pdf_file %}
+                                            <a href="{% url 'view_pdf' application.id %}" class="btn btn-sm btn-outline-secondary ms-1" target="_blank">
+                                                <i class="fas fa-file-pdf me-1"></i>PDF
+                                            </a>
+                                        {% endif %}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="text-center">
+                        <i class="fas fa-check-circle fa-3x text-success mb-3"></i>
+                        <p class="text-muted">No pending applications to review.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endif %}
+{% endblock %}

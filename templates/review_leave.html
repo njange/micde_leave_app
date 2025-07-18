@@ -1,0 +1,135 @@
+{% extends 'base.html' %}
+
+{% block title %}Review Leave Application{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-10">
+        <div class="card shadow">
+            <div class="card-header bg-warning text-dark">
+                <h4><i class="fas fa-clipboard-check me-2"></i>Review Leave Application</h4>
+            </div>
+            <div class="card-body">
+                <!-- Application Details -->
+                <div class="row mb-4">
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header bg-info text-white">
+                                <h6><i class="fas fa-user me-1"></i>Employee Details</h6>
+                            </div>
+                            <div class="card-body">
+                                <table class="table table-borderless">
+                                    <tr>
+                                        <td><strong>Name:</strong></td>
+                                        <td>{{ application.user.first_name }} {{ application.user.last_name }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Department:</strong></td>
+                                        <td>{{ application.user.department }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Role:</strong></td>
+                                        <td>{{ application.user.get_role_display }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Leave Days Remaining:</strong></td>
+                                        <td><span class="badge bg-success">{{ application.user.leave_days_remaining }}</span></td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="card">
+                            <div class="card-header bg-primary text-white">
+                                <h6><i class="fas fa-calendar-alt me-1"></i>Leave Request Details</h6>
+                            </div>
+                            <div class="card-body">
+                                <table class="table table-borderless">
+                                    <tr>
+                                        <td><strong>Start Date:</strong></td>
+                                        <td>{{ application.start_date|date:"F d, Y" }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>End Date:</strong></td>
+                                        <td>{{ application.end_date|date:"F d, Y" }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Days Requested:</strong></td>
+                                        <td><span class="badge bg-warning">{{ application.days_requested }}</span></td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Applied On:</strong></td>
+                                        <td>{{ application.applied_date|date:"F d, Y H:i" }}</td>
+                                    </tr>
+                                    <tr>
+                                        <td><strong>Current Status:</strong></td>
+                                        <td>
+                                            <span class="badge bg-secondary">{{ application.get_status_display }}</span>
+                                        </td>
+                                    </tr>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Reason for Leave -->
+                <div class="card mb-4">
+                    <div class="card-header bg-secondary text-white">
+                        <h6><i class="fas fa-comment-alt me-1"></i>Reason for Leave</h6>
+                    </div>
+                    <div class="card-body">
+                        <p class="card-text">{{ application.reason }}</p>
+                    </div>
+                </div>
+
+                <!-- Review Form -->
+                <div class="card">
+                    <div class="card-header bg-success text-white">
+                        <h6><i class="fas fa-gavel me-1"></i>Your Decision</h6>
+                    </div>
+                    <div class="card-body">
+                        <form method="post">
+                            {% csrf_token %}
+                            <div class="mb-3">
+                                <label for="{{ form.status.id_for_label }}" class="form-label">
+                                    <i class="fas fa-check-circle me-1"></i>Review Decision
+                                </label>
+                                {{ form.status }}
+                                {% if form.status.errors %}
+                                    <div class="text-danger">{{ form.status.errors }}</div>
+                                {% endif %}
+                            </div>
+
+                            <div class="alert alert-info">
+                                <i class="fas fa-info-circle me-2"></i>
+                                <strong>Note:</strong> 
+                                <ul class="mb-0">
+                                    <li>If you <strong>approve</strong> this request, the leave days will be confirmed as used.</li>
+                                    <li>If you <strong>reject</strong> this request, the leave days will be restored to the employee's balance.</li>
+                                    <li>Once you make a decision, it cannot be undone.</li>
+                                </ul>
+                            </div>
+
+                            <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                                <a href="{% url 'dashboard' %}" class="btn btn-secondary me-md-2">
+                                    <i class="fas fa-arrow-left me-1"></i>Back to Dashboard
+                                </a>
+                                {% if application.pdf_file %}
+                                    <a href="{% url 'view_pdf' application.id %}" class="btn btn-outline-primary me-md-2" target="_blank">
+                                        <i class="fas fa-file-pdf me-1"></i>View PDF
+                                    </a>
+                                {% endif %}
+                                <button type="submit" class="btn btn-success">
+                                    <i class="fas fa-gavel me-1"></i>Submit Decision
+                                </button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
